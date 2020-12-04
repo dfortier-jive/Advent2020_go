@@ -18,7 +18,7 @@ func readData() [][]bool {
 	countLine := 0
 	for scanner.Scan() {
 		line := scanner.Text()
-		result[countLine] = make ([]bool, len(line))
+		result[countLine] = make([]bool, len(line))
 
 		// Scan for trees
 		for i, value := range line {

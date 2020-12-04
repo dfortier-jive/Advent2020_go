@@ -5,5 +5,5 @@ import (
 )
 
 func TestFormatAddress(t *testing.T) {
-	Part2();
+	Part2()
 }
