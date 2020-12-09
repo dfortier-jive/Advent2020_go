@@ -4,8 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
+
+	"dfortier.org/advent2020/pkg/util"
 )
 
 type bag struct {
@@ -94,7 +95,7 @@ func readData() rules {
 func extractSubbag(oneSubbag string) (int, string) {
 	childBagString := strings.TrimSpace(oneSubbag)
 	qteString := childBagString[:1]
-	qte := convert(qteString)
+	qte := util.Convert(qteString)
 	bagColor := childBagString[1:]
 
 	return qte, extractColorName(bagColor)
@@ -107,14 +108,6 @@ func extractColorName(color string) string {
 	color = strings.ReplaceAll(color, "bag", "")
 
 	return strings.TrimSpace(color)
-}
-
-func convert(value string) int {
-	i, err := strconv.Atoi(value)
-	if err != nil {
-		panic(err)
-	}
-	return i
 }
 
 func Day1VisitPart1() {
