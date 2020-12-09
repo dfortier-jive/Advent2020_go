@@ -22,3 +22,9 @@ func TestPart1(t *testing.T) {
 		println(fmt.Sprintf("Loop stop with value %d", value))
 	}
 }
+
+func TestPart2(t *testing.T) {
+	value := Part2Brute()
+
+	println(fmt.Sprintf("Loop stop with value %d", value))
+}

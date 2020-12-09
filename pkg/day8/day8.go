@@ -49,6 +49,10 @@ func readData() []*instruction {
 func Part1() (bool, int) {
 	program := readData()
 
+	return executeProgram(program)
+}
+
+func executeProgram(program []*instruction) (bool, int) {
 	executionPointer := 0
 	value := 0
 	for true {
@@ -76,4 +80,46 @@ func Part1() (bool, int) {
 		}
 	}
 	return false, value
+}
+
+func resetExecution(program []*instruction) {
+	for _, oneInstruction := range program {
+		oneInstruction.executed = false
+	}
+}
+
+func Part2Brute() int {
+	program := readData()
+
+	for i, oneInstruction := range program {
+		original := string(oneInstruction.instruction)
+		isAcc := false
+		switch oneInstruction.instruction {
+		case "nop":
+			oneInstruction.instruction = "jmp"
+		case "acc":
+			isAcc = true
+			break
+		case "jmp":
+			oneInstruction.instruction = "nop"
+		}
+		if isAcc {
+			continue
+		}
+		println(fmt.Sprintf("Swaping instruction %d from %s to %s", i, original, oneInstruction.instruction))
+		loop, value := executeProgram(program)
+		if !loop {
+			return value
+		}
+
+		// reset
+		resetExecution(program)
+		switch oneInstruction.instruction {
+		case "nop":
+			oneInstruction.instruction = "jmp"
+		case "jmp":
+			oneInstruction.instruction = "nop"
+		}
+	}
+	panic("Didn't find a permutation that did not loop")
 }
