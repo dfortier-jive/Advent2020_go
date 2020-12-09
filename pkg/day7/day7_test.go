@@ -18,3 +18,7 @@ func TestReadData(t *testing.T) {
 func TestVisitPart1(t *testing.T) {
 	Day1VisitPart1()
 }
+
+func TestVisitPart2(t *testing.T) {
+	Day1VisitPart2()
+}

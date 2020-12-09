@@ -144,3 +144,28 @@ func visitBagTree(oneBag *bag) bool {
 
 	return false
 }
+
+func Day1VisitPart2() {
+	rules := readData()
+
+	goldBag := rules.bags["shiny gold"]
+
+	count := visitBag(goldBag)
+	println(fmt.Sprintf("Found %d that can hold shiny gold bag", count))
+}
+
+func visitBag(oneBag *bag) int {
+	println(fmt.Sprintf("Visiting %s", oneBag.color))
+
+	totalChildCount := 0
+	for _, child := range oneBag.subbags {
+		childCount := visitBag(child.bag)
+		childCount = child.nbBags * childCount
+		totalChildCount += childCount
+		println(fmt.Sprintf("Total child for %s %d", oneBag.color, totalChildCount))
+	}
+	if oneBag.color != "shiny gold" {
+		totalChildCount = totalChildCount + 1
+	}
+	return totalChildCount
+}
