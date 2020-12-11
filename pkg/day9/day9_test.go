@@ -22,3 +22,8 @@ func TestPart1(t *testing.T) {
 	}
 	t.Error("Not found")
 }
+
+func TestPart2(t *testing.T) {
+	value := Part2()
+	println(fmt.Sprintf("Found sum %d", value))
+}

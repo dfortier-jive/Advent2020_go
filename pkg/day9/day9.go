@@ -63,3 +63,47 @@ func processMessage(data []int64) (int64, error) {
 	}
 	return -1, errors.New("All numbers are sums of other")
 }
+
+func Part2() int64 {
+	//invalidValue, _ := Part1()
+	invalidValue := int64(2089807806)
+	data := readData()
+
+	return findContigentNumbers(invalidValue, data)
+
+}
+
+func findContigentNumbersIndexes(numberToFind int64, data []int64) (int, int, error) {
+	for i := 0; i < len(data); i++ {
+		sum := data[i]
+		for j := i + 1; j < len(data); j++ {
+			if sum < numberToFind {
+				sum += data[j]
+			} else {
+				break
+			}
+			if sum == numberToFind {
+				return i, j, nil
+			}
+		}
+	}
+	return -1, -1, errors.New("No sum found")
+}
+
+func findContigentNumbers(numberToFind int64, data []int64) int64 {
+	minIndex, maxIndex, err := findContigentNumbersIndexes(numberToFind, data)
+	minValue, maxValue := int64(-1), int64(0)
+	for i := minIndex; i <= maxIndex; i++ {
+		value := data[i]
+		if value > maxValue {
+			maxValue = value
+		}
+		if minValue == -1 || value < minValue {
+			minValue = value
+		}
+	}
+	if err != nil {
+		panic("No sum found")
+	}
+	return minValue + maxValue
+}
