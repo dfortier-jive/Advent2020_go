@@ -38,6 +38,42 @@ func (s *spot) isFloor() bool {
 	return s.state == floor
 }
 
+func Part1() int {
+	seatingSpots := readData()
+	printMe(seatingSpots)
+	newSeatingSpots := copySeatings(seatingSpots)
+
+	maxIteration := 200
+	count := 0
+
+	for iterateSeating(seatingSpots, &newSeatingSpots) && count < maxIteration {
+		printMe(newSeatingSpots)
+		seatingSpots = newSeatingSpots
+		newSeatingSpots = copySeatings(seatingSpots)
+		println("one more iteration")
+	}
+	println("No change")
+	return countSpots(newSeatingSpots, occupied)
+}
+
+func Part2() int {
+	seatingSpots := readData()
+	printMe(seatingSpots)
+	newSeatingSpots := copySeatings(seatingSpots)
+
+	maxIteration := 200
+	count := 0
+
+	for iterateSeatingPart2(seatingSpots, &newSeatingSpots) && count < maxIteration {
+		printMe(newSeatingSpots)
+		seatingSpots = newSeatingSpots
+		newSeatingSpots = copySeatings(seatingSpots)
+		println("one more iteration")
+	}
+	println("No change")
+	return countSpots(newSeatingSpots, occupied)
+}
+
 func readData() [][]*spot {
 	var f *os.File
 	var err error
@@ -69,24 +105,6 @@ func readData() [][]*spot {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
 	return result
-}
-
-func Part1() int {
-	seatingSpots := readData()
-	printMe(seatingSpots)
-	newSeatingSpots := copySeatings(seatingSpots)
-
-	maxIteration := 200
-	count := 0
-
-	for iterateSeating(seatingSpots, &newSeatingSpots) && count < maxIteration {
-		printMe(newSeatingSpots)
-		seatingSpots = newSeatingSpots
-		newSeatingSpots = copySeatings(seatingSpots)
-		println("one more iteration")
-	}
-	println("No change")
-	return countSpots(newSeatingSpots, occupied)
 }
 
 func printMe(seatingSpots [][]*spot) {
@@ -169,27 +187,44 @@ func iterateSeating(seatingSpots [][]*spot, newSeatingSpots *[][]*spot) bool {
 	return hasChanged
 }
 
-// Return true if state should change
-func processEmptySeat(seatingSpots [][]*spot, current *spot, posX int, posY int) bool {
-	atLeastOneOccupied := checkAtLeastOneAdjacent(seatingSpots, occupied, posX, posY)
+func iterateSeatingPart2(seatingSpots [][]*spot, newSeatingSpots *[][]*spot) bool {
 
-	return !atLeastOneOccupied
+	maxHeight := getHeight(seatingSpots)
+	maxWidth := getWidth(seatingSpots)
+	hasChanged := false
+
+	for x := 0; x < maxWidth; x++ {
+		for y := 0; y < maxHeight; y++ {
+			//println(fmt.Sprintf("Checking %d,%d", x, y))
+
+			current := getSpot(seatingSpots, x, y)
+			newCurrentValue := getSpot(*newSeatingSpots, x, y)
+			switch current.state {
+			case emptySeat:
+				if processEmptySeatPart2(seatingSpots, current, x, y) {
+					newCurrentValue.state = occupied
+					hasChanged = true
+				}
+			case occupied:
+				if processOccupiedSeatPart2(seatingSpots, current, x, y) {
+					newCurrentValue.state = emptySeat
+					hasChanged = true
+				}
+			}
+		}
+	}
+	return hasChanged
 }
 
-func processOccupiedSeat(seatingSpots [][]*spot, current *spot, posX int, posY int) bool {
-	isAtLeastFourOccupied := isAtLeastFourOccupied(seatingSpots, posX, posY)
-	return isAtLeastFourOccupied
+func processEmptySeatPart2(seatingSpots [][]*spot, current *spot, posX int, posY int) bool {
+	return countAdjacentsInSight(seatingSpots, occupied, posX, posY) == 0
 }
 
-func checkAtLeastOneAdjacent(seatingSpots [][]*spot, stateValue int, posX int, posY int) bool {
-	return countAdjacents(seatingSpots, stateValue, posX, posY) > 0
+func processOccupiedSeatPart2(seatingSpots [][]*spot, current *spot, posX int, posY int) bool {
+	return countAdjacentsInSight(seatingSpots, occupied, posX, posY) >= 5
 }
 
-func isAtLeastFourOccupied(seatingSpots [][]*spot, posX int, posY int) bool {
-	return countAdjacents(seatingSpots, occupied, posX, posY) >= 4
-}
-
-func countAdjacents(seatingSpots [][]*spot, stateValue int, posX int, posY int) int {
+func countAdjacentsInSight(seatingSpots [][]*spot, stateValue int, posX int, posY int) int {
 
 	adjacents := 0
 
@@ -229,8 +264,67 @@ func countAdjacents(seatingSpots [][]*spot, stateValue int, posX int, posY int) 
 	return adjacents
 }
 
-// Walk the seatingSpots until we found the expected state or the end of the seat chart
-func move(seatingSpots [][]*spot, posX int, posY int, moveIncX int, moveIncY, expectedState int) bool {
+// Return true if state should change
+func processEmptySeat(seatingSpots [][]*spot, current *spot, posX int, posY int) bool {
+	atLeastOneOccupied := checkAtLeastOneAdjacent(seatingSpots, occupied, posX, posY)
+
+	return !atLeastOneOccupied
+}
+
+func processOccupiedSeat(seatingSpots [][]*spot, current *spot, posX int, posY int) bool {
+	isAtLeastFourOccupied := isAtLeastFourOccupied(seatingSpots, posX, posY)
+	return isAtLeastFourOccupied
+}
+
+func checkAtLeastOneAdjacent(seatingSpots [][]*spot, stateValue int, posX int, posY int) bool {
+	return countAdjacents(seatingSpots, stateValue, posX, posY) > 0
+}
+
+func isAtLeastFourOccupied(seatingSpots [][]*spot, posX int, posY int) bool {
+	return countAdjacents(seatingSpots, occupied, posX, posY) >= 4
+}
+
+func countAdjacents(seatingSpots [][]*spot, stateValue int, posX int, posY int) int {
+
+	adjacents := 0
+
+	// Go W
+	if checkseatstate(seatingSpots, posX, posY, -1, 0, stateValue) {
+		adjacents++
+	}
+	// Go E
+	if checkseatstate(seatingSpots, posX, posY, 1, 0, stateValue) {
+		adjacents++
+	}
+	// Go N
+	if checkseatstate(seatingSpots, posX, posY, 0, -1, stateValue) {
+		adjacents++
+	}
+	// Go S
+	if checkseatstate(seatingSpots, posX, posY, 0, 1, stateValue) {
+		adjacents++
+	}
+	// Go NW
+	if checkseatstate(seatingSpots, posX, posY, -1, -1, stateValue) {
+		adjacents++
+	}
+	// Go NE
+	if checkseatstate(seatingSpots, posX, posY, 1, -1, stateValue) {
+		adjacents++
+	}
+	// Go SW
+	if checkseatstate(seatingSpots, posX, posY, -1, 1, stateValue) {
+		adjacents++
+	}
+	// Go SE
+	if checkseatstate(seatingSpots, posX, posY, 1, 1, stateValue) {
+		adjacents++
+	}
+
+	return adjacents
+}
+
+func checkseatstate(seatingSpots [][]*spot, posX int, posY int, moveIncX int, moveIncY, expectedState int) bool {
 	x := posX + moveIncX
 	y := posY + moveIncY
 
@@ -239,6 +333,26 @@ func move(seatingSpots [][]*spot, posX int, posY int, moveIncX int, moveIncY, ex
 		if isExpectedState(expectedState, seat) {
 			return true
 		}
+	}
+	return false
+}
+
+// Walk the seatingSpots until we found the expected state or the end of the seat chart
+func move(seatingSpots [][]*spot, posX int, posY int, moveIncX int, moveIncY, expectedState int) bool {
+	x := posX + moveIncX
+	y := posY + moveIncY
+
+	for isInside(seatingSpots, x, y) {
+		seat := getSpot(seatingSpots, x, y)
+		if isExpectedState(floor, seat) {
+			x += moveIncX
+			y += moveIncY
+			continue
+		}
+		if isExpectedState(expectedState, seat) {
+			return true
+		}
+		return false
 	}
 	return false
 }
