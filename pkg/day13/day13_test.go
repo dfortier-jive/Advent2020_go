@@ -2,6 +2,8 @@ package day13
 
 import "testing"
 
+const myInputSchedule = "29,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,41,x,x,x,37,x,x,x,x,x,653,x,x,x,x,x,x,x,x,x,x,x,x,13,x,x,x,17,x,x,x,x,x,23,x,x,x,x,x,x,x,823,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,19"
+
 func TestParseSchedule(t *testing.T) {
 	busScheduleString := "7,13,x,x,59,x,31,19"
 	busSchedule := parseBusSchedule(busScheduleString)
@@ -63,5 +65,51 @@ func TestPart1Example(t *testing.T) {
 }
 
 func TestPart1(t *testing.T) {
-	Part1(1008169, "29,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,41,x,x,x,37,x,x,x,x,x,653,x,x,x,x,x,x,x,x,x,x,x,x,13,x,x,x,17,x,x,x,x,x,23,x,x,x,x,x,x,x,823,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,19")
+	Part1(1008169, myInputSchedule)
+}
+
+func TestPart2Example1(t *testing.T) {
+	result := Part2("7,13,x,x,59,x,31,19", 0)
+	if result != 1068781 {
+		t.Errorf("Expected %d but was %d", 1068781, result)
+	}
+}
+
+func TestPart2Example2(t *testing.T) {
+	result := Part2("17,x,13,19", 0)
+	if result != 3417 {
+		t.Errorf("Expected %d but was %d", 3417, result)
+	}
+}
+
+func TestPart2Example3(t *testing.T) {
+	result := Part2("67,7,59,61", 0)
+	if result != 754018 {
+		t.Errorf("Expected %d but was %d", 754018, result)
+	}
+}
+
+func TestPart2Example4(t *testing.T) {
+	result := Part2("67,x,7,59,61", 0)
+	if result != 779210 {
+		t.Errorf("Expected %d but was %d", 779210, result)
+	}
+}
+
+func TestPart2Example5(t *testing.T) {
+	result := Part2("67,7,x,59,61", 0)
+	if result != 1261476 {
+		t.Errorf("Expected %d but was %d", 1261476, result)
+	}
+}
+
+func TestPart2Example6(t *testing.T) {
+	result := Part2("1789,37,47,1889", 0)
+	if result != 1202161486 {
+		t.Errorf("Expected %d but was %d", 1202161486, result)
+	}
+}
+
+func TestPart2(t *testing.T) {
+	Part2(myInputSchedule, 100000000000000)
 }
