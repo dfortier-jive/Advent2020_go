@@ -10,7 +10,7 @@ const floor = 0
 const emptySeat = 1
 const occupied = 2
 
-const seatingHeight = 10
+const seatingHeight = 98
 
 var floorSpot = newSpot(floor)
 
@@ -71,12 +71,12 @@ func readData() [][]*spot {
 	return result
 }
 
-func Part1() {
+func Part1() int {
 	seatingSpots := readData()
 	printMe(seatingSpots)
 	newSeatingSpots := copySeatings(seatingSpots)
 
-	maxIteration := 10
+	maxIteration := 200
 	count := 0
 
 	for iterateSeating(seatingSpots, &newSeatingSpots) && count < maxIteration {
@@ -86,6 +86,7 @@ func Part1() {
 		println("one more iteration")
 	}
 	println("No change")
+	return countSpots(newSeatingSpots, occupied)
 }
 
 func printMe(seatingSpots [][]*spot) {
@@ -106,6 +107,21 @@ func printMe(seatingSpots [][]*spot) {
 		println("")
 	}
 	println("---------")
+}
+
+func countSpots(seatingSpots [][]*spot, state int) int {
+	count := 0
+	height := getHeight(seatingSpots)
+	width := getWidth(seatingSpots)
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			spot := getSpot(seatingSpots, x, y)
+			if isExpectedState(state, spot) {
+				count++
+			}
+		}
+	}
+	return count
 }
 
 func copySeatings(seatingSpots [][]*spot) [][]*spot {
@@ -133,9 +149,6 @@ func iterateSeating(seatingSpots [][]*spot, newSeatingSpots *[][]*spot) bool {
 	for x := 0; x < maxWidth; x++ {
 		for y := 0; y < maxHeight; y++ {
 			//println(fmt.Sprintf("Checking %d,%d", x, y))
-			if y == 1 && x == 0 {
-				println("bingo")
-			}
 
 			current := getSpot(seatingSpots, x, y)
 			newCurrentValue := getSpot(*newSeatingSpots, x, y)
@@ -221,17 +234,11 @@ func move(seatingSpots [][]*spot, posX int, posY int, moveIncX int, moveIncY, ex
 	x := posX + moveIncX
 	y := posY + moveIncY
 
-	for isInside(seatingSpots, x, y) {
+	if isInside(seatingSpots, x, y) {
 		seat := getSpot(seatingSpots, x, y)
-		if isExpectedState(floor, seat) {
-			x += moveIncX
-			y += moveIncY
-			continue
-		}
 		if isExpectedState(expectedState, seat) {
 			return true
 		}
-		return false
 	}
 	return false
 }
