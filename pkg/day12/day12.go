@@ -15,10 +15,10 @@ type direction struct {
 }
 
 // Face East
-func newDirection() *direction {
+func newDirection(incX int, incY int) *direction {
 	return &direction{
-		incrementX: 1,
-		incrementY: 0,
+		incrementX: incX,
+		incrementY: incY,
 	}
 }
 
@@ -29,7 +29,10 @@ type ship struct {
 }
 
 func newShip() *ship {
-	direction := newDirection()
+	return newShipWithDirection(newDirection(1, 0))
+}
+
+func newShipWithDirection(direction *direction) *ship {
 	return &ship{
 		x:         0,
 		y:         0,
@@ -69,6 +72,27 @@ func (s *ship) Move(instruction rune, value int) {
 	}
 }
 
+func (s *ship) MovePart2(instruction rune, value int) {
+	println(fmt.Sprintf("Executing %#U to %d. Ship position before %d, %d. Waypoint vector %d, %d",
+		instruction, value, s.x, s.y, s.direction.incrementX, s.direction.incrementY))
+	switch instruction {
+	case 'F':
+		s.goForward(value)
+	case 'N':
+		s.direction.changeDirectionCoord(0, value)
+	case 'S':
+		s.direction.changeDirectionCoord(0, -1*value)
+	case 'E':
+		s.direction.changeDirectionCoord(value, 0)
+	case 'W':
+		s.direction.changeDirectionCoord(-1*value, 0)
+	case 'L':
+		s.direction.changeDirectionUp(value)
+	case 'R':
+		s.direction.changeDirectionDown(value)
+	}
+}
+
 func (s *ship) goForward(value int) {
 	s.changePosition(value*s.direction.incrementX, value*s.direction.incrementY)
 }
@@ -82,22 +106,27 @@ func (s *ship) getManhattanDistance() int {
 	return int(math.Abs(float64(s.x)) + math.Abs(float64(s.y)))
 }
 
-func (s *direction) changeDirectionUp(angle int) {
+func (d *direction) changeDirectionUp(angle int) {
 	if angle%90 != 0 {
 		panic(fmt.Sprintf("Angle is not a multiple of 90 degres. Found %d", angle))
 	}
 	floatAngle := float64(angle)
 	floatRadians := floatAngle * math.Pi / 180
 
-	x2 := float64(s.incrementX)*math.Cos(floatRadians) - float64(s.incrementY)*math.Sin(floatRadians)
-	y2 := float64(s.incrementX)*math.Sin(floatRadians) + float64(s.incrementY)*math.Cos(floatRadians)
+	x2 := float64(d.incrementX)*math.Cos(floatRadians) - float64(d.incrementY)*math.Sin(floatRadians)
+	y2 := float64(d.incrementX)*math.Sin(floatRadians) + float64(d.incrementY)*math.Cos(floatRadians)
 
-	s.incrementX = int(x2)
-	s.incrementY = int(y2)
+	d.incrementX = int(math.Round(x2))
+	d.incrementY = int(math.Round(y2))
 }
 
-func (s *direction) changeDirectionDown(angle int) {
-	s.changeDirectionUp(360 - angle)
+func (d *direction) changeDirectionDown(angle int) {
+	d.changeDirectionUp(360 - angle)
+}
+
+func (d *direction) changeDirectionCoord(incX int, incY int) {
+	d.incrementX += incX
+	d.incrementY += incY
 }
 
 func readInstructions() []instruction {
@@ -130,6 +159,17 @@ func Part1() *ship {
 
 	for _, instruction := range instructions {
 		ship.Move(instruction.instruction, instruction.value)
+	}
+
+	return ship
+}
+
+func Part2() *ship {
+	instructions := readInstructions()
+	ship := newShipWithDirection(newDirection(10, 1))
+
+	for _, instruction := range instructions {
+		ship.MovePart2(instruction.instruction, instruction.value)
 	}
 
 	return ship
