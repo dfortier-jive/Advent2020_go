@@ -59,9 +59,9 @@ func TestMask(t *testing.T) {
 		value := newValue(c.intValue)
 		mask := newMask(c.mask)
 
-		value.applyMask(mask)
+		newValue := value.applyMask(mask)
 
-		if value.binaryValue != c.expectedBinaryString {
+		if newValue.binaryValue != c.expectedBinaryString {
 			t.Errorf("Expected %s but got %s", c.expectedBinaryString, value.binaryValue)
 		}
 	}
@@ -91,6 +91,49 @@ func TestPart1(t *testing.T) {
 
 	for _, instructions := range instructionsSet {
 		memory.Execute(instructions)
+	}
+
+	result := memory.AddAll()
+
+	fmt.Printf("Got sum of %d \n", result)
+}
+
+func TestPart2Example1(t *testing.T) {
+	mask := newMask("000000000000000000000000000000X1001X")
+	addresses := getAddresses(42, mask)
+
+	if len(addresses) != 4 {
+		t.Errorf("Expected %d addresses but got %d", 4, len(addresses))
+	}
+	if addresses[0].getDecimal() != 59 {
+		t.Errorf("Expected %d addresses but got %d", 59, addresses[0].getDecimal())
+	}
+	if addresses[1].getDecimal() != 58 {
+		t.Errorf("Expected %d addresses but got %d", 58, addresses[1].getDecimal())
+	}
+	if addresses[2].getDecimal() != 27 {
+		t.Errorf("Expected %d addresses but got %d", 27, addresses[2].getDecimal())
+	}
+	if addresses[3].getDecimal() != 26 {
+		t.Errorf("Expected %d addresses but got %d", 26, addresses[3].getDecimal())
+	}
+}
+
+func TestPart2Example2(t *testing.T) {
+	mask := newMask("00000000000000000000000000000000X0XX")
+	addresses := getAddresses(26, mask)
+
+	if len(addresses) != 8 {
+		t.Errorf("Expected %d addresses but got %d", 4, len(addresses))
+	}
+}
+
+func TestPart2(t *testing.T) {
+	memory := newMemory()
+	instructionsSet := GetInstructionsFromFile()
+
+	for _, instructions := range instructionsSet {
+		memory.ExecutePart2(instructions)
 	}
 
 	result := memory.AddAll()

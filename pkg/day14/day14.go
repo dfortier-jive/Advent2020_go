@@ -2,6 +2,7 @@ package day14
 
 import (
 	"bufio"
+	"container/list"
 	"fmt"
 	"math"
 	"os"
@@ -70,6 +71,24 @@ func (v *value) applyMask(mask *mask) *value {
 	}
 }
 
+func (v *value) applyAddressMask(mask *mask) *value {
+	maskedValue := make([]rune, len(v.binaryValue))
+	for i := 0; i < len(mask.maskValue); i++ {
+		maskValue := mask.maskValue[i]
+		switch maskValue {
+		case '1':
+			maskedValue[i] = '1'
+		case '0':
+			maskedValue[i] = rune(v.binaryValue[i])
+		case 'X':
+			maskedValue[i] = 'X'
+		}
+	}
+	return &value{
+		binaryValue: string(maskedValue),
+	}
+}
+
 type mask struct {
 	maskValue string
 }
@@ -81,16 +100,16 @@ func newMask(maskString string) *mask {
 }
 
 type memory struct {
-	memSpot map[int]int64
+	memSpot map[int64]int64
 }
 
 func newMemory() *memory {
 	return &memory{
-		memSpot: make(map[int]int64, 0),
+		memSpot: make(map[int64]int64, 0),
 	}
 }
 
-func (m *memory) Apply(address int, value int64) {
+func (m *memory) Apply(address int64, value int64) {
 	m.memSpot[address] = value
 }
 
@@ -98,7 +117,16 @@ func (m *memory) Execute(instructions *instructions) {
 	for _, instruction := range instructions.instructions {
 		valueBefore := newValue(instruction.value)
 		valueAfter := valueBefore.applyMask(instructions.mask)
-		m.Apply(instruction.address, valueAfter.getDecimal())
+		m.Apply(int64(instruction.address), valueAfter.getDecimal())
+	}
+}
+
+func (m *memory) ExecutePart2(instructions *instructions) {
+	for _, instruction := range instructions.instructions {
+		addressesAfter := getAddresses(instruction.address, instructions.mask)
+		for _, addressAfter := range addressesAfter {
+			m.Apply(addressAfter.getDecimal(), instruction.value)
+		}
 	}
 }
 
@@ -170,4 +198,46 @@ func GetInstructionsFromFile() []*instructions {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
 	return result
+}
+
+func getAddresses(initialAddress int, mask *mask) []*value {
+	addressValue := newValue(int64(initialAddress))
+
+	valueWithFloating := addressValue.applyAddressMask(mask)
+	result := list.New()
+
+	getAddressRec(valueWithFloating.binaryValue, result)
+
+	sliceResult := make([]*value, result.Len())
+	i := 0
+	for e := result.Front(); e != nil; e = e.Next() {
+		sliceResult[i] = e.Value.(*value)
+		i++
+	}
+
+	return sliceResult
+}
+
+func getAddressRec(initialValue string, result *list.List) {
+	for i, char := range initialValue {
+		switch char {
+		case 'X':
+			newValueOne := replaceAtIndex(initialValue, '1', i)
+			newValueZero := replaceAtIndex(initialValue, '0', i)
+			getAddressRec(newValueOne, result)
+			getAddressRec(newValueZero, result)
+			return
+		}
+	}
+	// No 'X' found, add it
+	value := &value{
+		binaryValue: initialValue,
+	}
+	result.PushBack(value)
+}
+
+func replaceAtIndex(in string, r rune, i int) string {
+	out := []rune(in)
+	out[i] = r
+	return string(out)
 }
